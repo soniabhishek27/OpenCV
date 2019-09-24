@@ -1,1 +1,91 @@
 
+package com.example.thirdcv;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.view.SurfaceView;
+import android.widget.Toast;
+
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.JavaCameraView;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+
+public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
+
+    BaseLoaderCallback baseLoaderCallback;
+    CameraBridgeViewBase cameraBridgeViewBase;
+
+    JavaCameraView javaCameraView;
+
+    Mat mat1, mat2, mat3;
+    Scalar scalarLow,scalarHigh;
+
+    public static final int CAMERA_REQUEST_CODE = 200;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        OpenCVLoader.initDebug();
+
+        javaCameraView=findViewById(R.id.mCameraView);
+        javaCameraView.setCameraIndex(0);
+
+        scalarLow = new Scalar(45,20,10);
+        scalarHigh = new Scalar(75,255,255);
+
+        javaCameraView.setCvCameraViewListener(this);
+        javaCameraView.enableView();
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        javaCameraView.disableView();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        javaCameraView.enableView();
+    }
+
+    @Override
+    public void onCameraViewStarted(int width, int height) {
+        mat1 = new Mat(width,height,CvType.CV_8UC4);
+        mat2 = new Mat(width,height,CvType.CV_8UC4);
+
+    }
+
+
+    @Override
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+
+        Imgproc.cvtColor(inputFrame.rgba(),mat1,Imgproc.COLOR_BGR2HSV);
+        Core.inRange(mat1,scalarLow,scalarHigh,mat2);
+        return mat2;
+
+
+
+    }
+
+
+    @Override
+    public void onCameraViewStopped() {
+
+    }
+}
